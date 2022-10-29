@@ -10,30 +10,21 @@
 #include <math.h>
 
 //constants
-#define SAMPLE_SIZE 19
-#define DB_SIZE 1000002
+#define SAMPLE_SIZE 20
+#define DB_SIZE 1000000
 
 typedef enum {
     COLUMN_1,
     COLUMN_2,
-    COLUMN_3,
-    COLUMN_4,
-    COLUMN_5,
-    COLUMN_6,
-    COLUMN_7,
-    COLUMN_8,
-    COLUMN_9,
-    COLUMN_10,
-    COLUMN_11
-} csv_columns_t;
+} sample_csv_columns_t;
 
-// Structure Definitions
+
+// Structure Declarations
 typedef struct {
     float x;
     float y;
 
 } minutia_t;
-
 
 
 typedef struct {
@@ -43,19 +34,55 @@ typedef struct {
 } sample_t;
 
 
-
+typedef struct {
+    int match_id;
+    int minutia_match;
+    float distance_to_minutia;
+} result_t;
 
 minutia_t samples[SAMPLE_SIZE];
 sample_t db_minutiae[DB_SIZE];
 sample_t db2_minutiae[DB_SIZE];
+result_t result;
 
-
-//Timing related vaiables
-clock_t start_time, end_time;
 
 //Function Declarations
+
+/**
+ * @brief Loads and stores data from the database 2 file.
+ * Utilizes db2_minutiae array to hold the data read
+ * 
+ * @return 0 if successful
+ */
 int load_data(void);
+
+
+/**
+ * @brief Loads and stores the sample data from the sample file.
+ * Utilizes samples array to hold the data
+ * 
+ * @return 0 if successful
+ */
+int load_samples(void);
+
+
+/**
+ * @brief For each sample, searches through database elements to find
+ * distance between each minutiae and the sample.
+ * outputs the closest minutia when the search is completed
+ * 
+ */
 void search_through(void);
+
+
+/**
+ * @brief Calculates the distance between two points.
+ * Implements formula D = ((x-x1)^2 + (y-y1)^2)^0.5
+ * 
+ * @param point_1 Sample point, x & y
+ * @param point_2 Database point, x1 & y1
+ * @return float: distance between the two input points
+ */
 float find_distance(minutia_t point_1, minutia_t point_2);
 
 

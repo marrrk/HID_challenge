@@ -1,14 +1,12 @@
 # tool macros
 CC ?= gcc
 CFLAGS := -Wall -lm -O3
-DBGFLAGS := -g
 COBJFLAGS := $(CFLAGS) -c
 
 # path macros
 BIN_PATH := bin
 OBJ_PATH := obj
 SRC_PATH := src
-DBG_PATH := debug
 
 # compile macros
 TARGET_NAME := challenge.bin
@@ -16,19 +14,14 @@ ifeq ($(OS),Windows_NT)
 	TARGET_NAME := $(addsuffix .exe,$(TARGET_NAME))
 endif
 TARGET := $(BIN_PATH)/$(TARGET_NAME)
-TARGET_DEBUG := $(DBG_PATH)/$(TARGET_NAME)
 
 # src files & obj files
 SRC := $(foreach x, $(SRC_PATH), $(wildcard $(addprefix $(x)/*,.c*)))
 OBJ := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
-OBJ_DEBUG := $(addprefix $(DBG_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
-CSV := $(wildcard *.csv)
 
 # clean files list
-DISTCLEAN_LIST := $(OBJ) \
-                  $(OBJ_DEBUG)
+DISTCLEAN_LIST := $(OBJ) 
 CLEAN_LIST := $(TARGET) \
-			  $(TARGET_DEBUG) \
 			  $(DISTCLEAN_LIST)
 
 # default rule
@@ -41,11 +34,7 @@ $(TARGET): $(OBJ)
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	$(CC) $(COBJFLAGS) -o $@ $<
 
-$(DBG_PATH)/%.o: $(SRC_PATH)/%.c*
-	$(CC) $(COBJFLAGS) $(DBGFLAGS) -o $@ $<
 
-$(TARGET_DEBUG): $(OBJ_DEBUG)
-	$(CC) $(CFLAGS) $(DBGFLAGS) $(OBJ_DEBUG) -o $@
 
 # phony rules
 .PHONY: makedir all debug clean distclean
@@ -53,16 +42,15 @@ run: makedir
 	@./$(TARGET)
 
 makedir:
-	@mkdir -p $(BIN_PATH) $(OBJ_PATH) $(DBG_PATH)
+	@mkdir -p $(BIN_PATH) $(OBJ_PATH)
 
 all: $(TARGET)
 
-debug: $(TARGET_DEBUG)
 
 clean:
 	@echo CLEAN $(CLEAN_LIST)
 	@rm -f $(CLEAN_LIST)
-	@rmdir $(BIN_PATH) $(OBJ_PATH) $(DBG_PATH)
+	@rm -rf $(BIN_PATH) $(OBJ_PATH)
 
 distclean:
 	@echo CLEAN $(DISTCLEAN_LIST)

@@ -1,6 +1,6 @@
 # tool macros
 CC ?= gcc
-CFLAGS := -Wall -lm -O3
+CFLAGS := -Wall -lm -O0 -lpthread
 COBJFLAGS := $(CFLAGS) -c
 
 # path macros

@@ -8,10 +8,16 @@
 #include <ctype.h>
 #include <time.h>
 #include <math.h>
+#include <pthread.h>
+
+
+//pthread_mutex_t Mutex;
+
 
 //constants
 #define SAMPLE_SIZE 20
 #define DB_SIZE 1000000
+#define THREAD_COUNT SAMPLE_SIZE
 
 typedef enum {
     COLUMN_1,
@@ -40,11 +46,11 @@ typedef struct {
     float distance_to_minutia;
 } result_t;
 
-minutia_t samples[SAMPLE_SIZE];
+sample_t samples[SAMPLE_SIZE];
 sample_t db_minutiae[DB_SIZE];
 sample_t db2_minutiae[DB_SIZE];
 result_t result;
-
+result_t results[SAMPLE_SIZE];
 
 //Function Declarations
 
@@ -64,6 +70,9 @@ int load_data(void);
  * @return 0 if successful
  */
 int load_samples(void);
+
+void *thread_func(void* vargp);
+void search_through_threaded(void);
 
 
 /**

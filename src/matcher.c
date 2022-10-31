@@ -1,5 +1,6 @@
 #include "matcher.h"
 
+pthread_mutex_t Mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int load_samples(void){
     FILE *sample_file = fopen("samples.csv", "r");
@@ -26,10 +27,11 @@ int load_samples(void){
 
                 switch (sample_column){
                 case COLUMN_1:                                      // column with x values
-                    samples[sample_index].x = n;
+                    samples[sample_index].minutia[0].x = n;
+                    samples[sample_index].id = sample_index;
                     break;
                 case COLUMN_2:                                      // column with y values
-                    samples[sample_index].y = n;
+                    samples[sample_index].minutia[0].y = n;
                     break;                    
                 }
             }
@@ -97,19 +99,62 @@ int load_data(void){
     return 0;
 }
 
+
+
+void *thread_func(void *vargp){ //should take the sample & sample number
+        sample_t sample = *((sample_t *) vargp);
+        results[sample.id].distance_to_minutia = 100;
+        
+        for (int j =0; j<DB_SIZE; j++){                    // iterating through the database
+            for (int k = 0; k<5; k++){                     // iterating through each minutia
+                float temp_d = find_distance(sample.minutia[0], db2_minutiae[j].minutia[k]);                  
+                if (temp_d < results[sample.id].distance_to_minutia){               //check if calculated distance closer than  what is stored 
+                        results[sample.id].distance_to_minutia = temp_d;
+                        results[sample.id].match_id = db2_minutiae[j].id;
+                        results[sample.id].minutia_match = k;
+                }
+            }
+        }
+    return NULL;
+}
+
+
+void search_through_threaded(void){
+    pthread_t threads[THREAD_COUNT];
+
+    for (int i = 0 ; i < THREAD_COUNT; i++){
+        pthread_create(threads+i, NULL, &thread_func, &samples[i]);
+    }
+
+
+    for(int j = 0; j < THREAD_COUNT; j++){ 
+        if(pthread_join(threads[j], 0)){
+            pthread_mutex_lock(&Mutex);
+            printf("Problem joining thread %d\n", j);
+            pthread_mutex_unlock(&Mutex);
+        }
+    }
+
+    for (int i = 0; i<SAMPLE_SIZE; i++){
+        printf("Sample %d, closest match ID: %d minutia %d at distance %.4f\n", samples[i].id, results[i].match_id, results[i].minutia_match, results[i].distance_to_minutia);
+    }
+
+}
+
 void search_through(void){
     for (int i = 0; i<SAMPLE_SIZE; i++){                   //iterating through each sample
         result.distance_to_minutia = 100;                  //set distance to maximum
         for (int j =0; j<DB_SIZE; j++){                    // iterating through the database
             for (int k = 0; k<5; k++){                     // iterating through each minutia
 
-                float temp_d = find_distance(samples[i], db2_minutiae[j].minutia[k]);                  
+                float temp_d = find_distance(samples[i].minutia[0], db2_minutiae[j].minutia[k]);                  
                 if (temp_d < result.distance_to_minutia){               //check if calculated distance closer than  what is stored 
                         result.distance_to_minutia = temp_d;
                         result.match_id = db2_minutiae[j].id;
                         result.minutia_match = k;
                 }
             }
+
         }
         //Output result of current sample
         printf("Sample %d, closest match ID: %d minutia %d at distance %.4f\n", i, result.match_id, result.minutia_match, result.distance_to_minutia);

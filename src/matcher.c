@@ -126,7 +126,6 @@ void search_through_threaded(void){
         pthread_create(threads+i, NULL, &thread_func, &samples[i]);
     }
 
-
     for(int j = 0; j < THREAD_COUNT; j++){ 
         if(pthread_join(threads[j], 0)){
             pthread_mutex_lock(&Mutex);

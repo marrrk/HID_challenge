@@ -71,7 +71,23 @@ int load_data(void);
  */
 int load_samples(void);
 
+/**
+ * @brief Searches through the database to match an individual sample
+ *  with the associate minutia
+ * 
+ * @param vargp pointer to sample struct
+ * @return void* 
+ */
 void *thread_func(void* vargp);
+
+
+/**
+ * @brief Implements search function in threads. 
+ * A thread is created for each sample, and the 
+ * the thread uses *thread_func to match an a sample
+ * to its associated minutia
+ * 
+ */
 void search_through_threaded(void);
 
 
